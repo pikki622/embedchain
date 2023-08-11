@@ -82,16 +82,21 @@ class ElasticsearchDB(BaseVectorDB):
         :param metadatas: list of metadata associated with docs
         :param ids: ids of docs
         """
-        docs = []
         embeddings = self.embedding_fn(documents)
-        for id, text, metadata, embeddings in zip(ids, documents, metadatas, embeddings):
-            docs.append(
-                {
-                    "_index": self.es_index,
-                    "_id": id,
-                    "_source": {"text": text, "metadata": metadata, "embeddings": embeddings},
-                }
+        docs = [
+            {
+                "_index": self.es_index,
+                "_id": id,
+                "_source": {
+                    "text": text,
+                    "metadata": metadata,
+                    "embeddings": embeddings,
+                },
+            }
+            for id, text, metadata, embeddings in zip(
+                ids, documents, metadatas, embeddings
             )
+        ]
         bulk(self.client, docs)
         self.client.indices.refresh(index=self.es_index)
         return
@@ -120,14 +125,12 @@ class ElasticsearchDB(BaseVectorDB):
         _source = ["text"]
         response = self.client.search(index=self.es_index, query=query, _source=_source, size=n_results)
         docs = response["hits"]["hits"]
-        contents = [doc["_source"]["text"] for doc in docs]
-        return contents
+        return [doc["_source"]["text"] for doc in docs]
 
     def count(self) -> int:
         query = {"match_all": {}}
         response = self.client.count(index=self.es_index, query=query)
-        doc_count = response["count"]
-        return doc_count
+        return response["count"]
 
     def reset(self):
         # Delete all data from the database

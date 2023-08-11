@@ -24,8 +24,7 @@ class App(EmbedChain):
         super().__init__(config)
 
     def get_llm_model_answer(self, prompt, config: ChatConfig):
-        messages = []
-        messages.append({"role": "user", "content": prompt})
+        messages = [{"role": "user", "content": prompt}]
         response = openai.ChatCompletion.create(
             model=config.model or "gpt-3.5-turbo-0613",
             messages=messages,
@@ -45,5 +44,4 @@ class App(EmbedChain):
         This is a generator for streaming response from the OpenAI completions API
         """
         for line in response:
-            chunk = line["choices"][0].get("delta", {}).get("content", "")
-            yield chunk
+            yield line["choices"][0].get("delta", {}).get("content", "")

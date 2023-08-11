@@ -9,8 +9,7 @@ dashboard_bp = Blueprint("dashboard", __name__)
 def set_key():
     data = request.get_json()
     api_key = data["openAIKey"]
-    existing_key = APIKey.query.first()
-    if existing_key:
+    if existing_key := APIKey.query.first():
         existing_key.key = api_key
     else:
         new_key = APIKey(key=api_key)
@@ -22,8 +21,7 @@ def set_key():
 # Check OpenAI Key
 @dashboard_bp.route("/api/check_key", methods=["GET"])
 def check_key():
-    existing_key = APIKey.query.first()
-    if existing_key:
+    if existing_key := APIKey.query.first():
         return make_response(jsonify(status="ok", message="OpenAI Key exists"), 200)
     else:
         return make_response(jsonify(status="fail", message="No OpenAI Key present"), 200)
@@ -35,8 +33,7 @@ def create_bot():
     data = request.get_json()
     name = data["name"]
     slug = name.lower().replace(" ", "_")
-    existing_bot = BotList.query.filter_by(slug=slug).first()
-    if existing_bot:
+    if existing_bot := BotList.query.filter_by(slug=slug).first():
         return (make_response(jsonify(message="Bot already exists"), 400),)
     new_bot = BotList(name=name, slug=slug)
     db.session.add(new_bot)
@@ -49,8 +46,7 @@ def create_bot():
 def delete_bot():
     data = request.get_json()
     slug = data.get("slug")
-    bot = BotList.query.filter_by(slug=slug).first()
-    if bot:
+    if bot := BotList.query.filter_by(slug=slug).first():
         db.session.delete(bot)
         db.session.commit()
         return make_response(jsonify(message="Bot deleted successfully"), 200)
@@ -61,12 +57,11 @@ def delete_bot():
 @dashboard_bp.route("/api/get_bots", methods=["GET"])
 def get_bots():
     bots = BotList.query.all()
-    bot_list = []
-    for bot in bots:
-        bot_list.append(
-            {
-                "name": bot.name,
-                "slug": bot.slug,
-            }
-        )
+    bot_list = [
+        {
+            "name": bot.name,
+            "slug": bot.slug,
+        }
+        for bot in bots
+    ]
     return jsonify(bot_list)

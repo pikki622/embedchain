@@ -78,10 +78,9 @@ class DataFormatter:
             "docs_site": DocsSiteChunker,
             "notion": NotionChunker,
         }
-        if data_type in chunker_classes:
-            chunker_class = chunker_classes[data_type]
-            chunker = chunker_class(config)
-            chunker.set_data_type(data_type)
-            return chunker
-        else:
+        if data_type not in chunker_classes:
             raise ValueError(f"Unsupported data type: {data_type}")
+        chunker_class = chunker_classes[data_type]
+        chunker = chunker_class(config)
+        chunker.set_data_type(data_type)
+        return chunker

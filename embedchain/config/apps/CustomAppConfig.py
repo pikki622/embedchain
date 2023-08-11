@@ -93,11 +93,10 @@ class CustomAppConfig(BaseAppConfig):
 
             if model:
                 embeddings = OpenAIEmbeddings(model=model)
+            elif deployment_name:
+                embeddings = OpenAIEmbeddings(deployment=deployment_name)
             else:
-                if deployment_name:
-                    embeddings = OpenAIEmbeddings(deployment=deployment_name)
-                else:
-                    embeddings = OpenAIEmbeddings()
+                embeddings = OpenAIEmbeddings()
             return CustomAppConfig.langchain_default_concept(embeddings)
 
         elif embedding_function == EmbeddingFunctions.HUGGING_FACE:

@@ -155,13 +155,11 @@ class EmbedChain:
         :return: The content of the document that matched your query.
         """
         where = {"app_id": self.config.id} if self.config.id is not None else {}  # optional filter
-        contents = self.db.query(
+        return self.db.query(
             input_query=input_query,
             n_results=config.number_documents,
             where=where,
         )
-
-        return contents
 
     def _append_search_and_context(self, context, web_search_result):
         return f"{context}\nWeb Search Result: {web_search_result}"
@@ -178,14 +176,15 @@ class EmbedChain:
         :return: The prompt
         """
         context_string = (" | ").join(contexts)
-        web_search_result = kwargs.get("web_search_result", "")
-        if web_search_result:
+        if web_search_result := kwargs.get("web_search_result", ""):
             context_string = self._append_search_and_context(context_string, web_search_result)
-        if not config.history:
-            prompt = config.template.substitute(context=context_string, query=input_query)
-        else:
-            prompt = config.template.substitute(context=context_string, query=input_query, history=config.history)
-        return prompt
+        return (
+            config.template.substitute(context=context_string, query=input_query)
+            if not config.history
+            else config.template.substitute(
+                context=context_string, query=input_query, history=config.history
+            )
+        )
 
     def get_answer_from_llm(self, prompt, config: ChatConfig):
         """
@@ -240,11 +239,10 @@ class EmbedChain:
 
         answer = self.get_answer_from_llm(prompt, config)
 
-        if isinstance(answer, str):
-            logging.info(f"Answer: {answer}")
-            return answer
-        else:
+        if not isinstance(answer, str):
             return self._stream_query_response(answer)
+        logging.info(f"Answer: {answer}")
+        return answer
 
     def _stream_query_response(self, answer):
         streamed_answer = ""
@@ -282,9 +280,7 @@ class EmbedChain:
         contexts = self.retrieve_from_database(input_query, config)
 
         global memory
-        chat_history = memory.load_memory_variables({})["history"]
-
-        if chat_history:
+        if chat_history := memory.load_memory_variables({})["history"]:
             config.set_history(chat_history)
 
         prompt = self.generate_prompt(input_query, contexts, config, **k)
@@ -297,13 +293,12 @@ class EmbedChain:
 
         memory.chat_memory.add_user_message(input_query)
 
-        if isinstance(answer, str):
-            memory.chat_memory.add_ai_message(answer)
-            logging.info(f"Answer: {answer}")
-            return answer
-        else:
+        if not isinstance(answer, str):
             # this is a streamed response and needs to be handled differently.
             return self._stream_chat_response(answer)
+        memory.chat_memory.add_ai_message(answer)
+        logging.info(f"Answer: {answer}")
+        return answer
 
     def _stream_chat_response(self, answer):
         streamed_answer = ""

@@ -32,12 +32,12 @@ class EmbedChainPersonApp:
         :param config: Optional. The `ChatConfig` instance to use as
         configuration options.
         """
-        template = Template(self.person_prompt + " " + default_prompt)
+        template = Template(f"{self.person_prompt} {default_prompt}")
 
         if config:
             if config.template:
                 # Add person prompt to custom user template
-                config.template = Template(self.person_prompt + " " + config.template.template)
+                config.template = Template(f"{self.person_prompt} {config.template.template}")
             else:
                 # If no user template is present, use person prompt with the default template
                 config.template = template

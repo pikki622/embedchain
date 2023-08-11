@@ -84,18 +84,11 @@ class QueryConfig(BaseConfig):
         :raises ValueError: If the template is not valid as template should
         contain $context and $query (and optionally $history).
         """
-        if number_documents is None:
-            self.number_documents = 1
-        else:
-            self.number_documents = number_documents
-
-        if not history:
+        self.number_documents = 1 if number_documents is None else number_documents
+        if history and len(history) == 0 or not history:
             self.history = None
         else:
-            if len(history) == 0:
-                self.history = None
-            else:
-                self.history = history
+            self.history = history
 
         if template is None:
             if self.history is None:
@@ -111,11 +104,10 @@ class QueryConfig(BaseConfig):
 
         if self.validate_template(template):
             self.template = template
+        elif self.history is None:
+            raise ValueError("`template` should have `query` and `context` keys")
         else:
-            if self.history is None:
-                raise ValueError("`template` should have `query` and `context` keys")
-            else:
-                raise ValueError("`template` should have `query`, `context` and `history` keys")
+            raise ValueError("`template` should have `query`, `context` and `history` keys")
 
         if not isinstance(stream, bool):
             raise ValueError("`stream` should be bool")

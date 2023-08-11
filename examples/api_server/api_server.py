@@ -27,8 +27,7 @@ def add():
 @app.route("/query", methods=["POST"])
 def query():
     data = request.get_json()
-    question = data.get("question")
-    if question:
+    if question := data.get("question"):
         try:
             response = chat_bot.chat(question)
             return jsonify({"data": response}), 200

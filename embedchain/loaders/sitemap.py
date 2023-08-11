@@ -24,7 +24,7 @@ class SitemapLoader(BaseLoader):
         soup = BeautifulSoup(response.text, "xml")
 
         links = [link.text for link in soup.find_all("loc") if link.parent.name == "url"]
-        if len(links) == 0:
+        if not links:
             # Get all <loc> tags as a fallback. This might include images.
             links = [link.text for link in soup.find_all("loc")]
 

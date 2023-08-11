@@ -55,11 +55,10 @@ class OpenSourceApp(EmbedChain):
                 "OpenSourceApp does not support switching models at runtime. Please create a new app instance."
             )
 
-        response = self.instance.generate(
+        return self.instance.generate(
             prompt=prompt,
             streaming=config.stream,
             top_p=config.top_p,
             max_tokens=config.max_tokens,
             temp=config.temperature,
         )
-        return response

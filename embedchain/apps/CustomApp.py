@@ -148,5 +148,4 @@ class CustomApp(EmbedChain):
         This is a generator for streaming response from the OpenAI completions API
         """
         for line in response:
-            chunk = line["choices"][0].get("delta", {}).get("content", "")
-            yield chunk
+            yield line["choices"][0].get("delta", {}).get("content", "")
